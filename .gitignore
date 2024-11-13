@@ -1,0 +1,8 @@
+debian/
+!debian/control
+build/
+dist/
+leftover.spec
+scicomp-leftover.spec
+src/scicomp_leftover.egg-info/
+venv/
