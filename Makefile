@@ -1,4 +1,11 @@
 release=${RELEASE}
+package=${PACKAGE}
+
+rootdir=debian/$(package)_$(release)
+pkgdir=$(rootdir)/DEBIAN
+libdir=$(rootdir)/usr/local/lib
+sbindir=$(rootdir)/usr/local/sbin
+
 all:
 	echo "No \"all\" target actions set ATM"
 
@@ -11,27 +18,36 @@ build: buildenv
 	. ~/venv/bin/activate && \
 		pyinstaller src/scicomp-leftover/leftover.py --name leftover
 
-debdirs:
-	mkdir -p debian/scicomp-leftover_$(release) \
-		debian/scicomp-leftover_$(release)/usr \
-		debian/scicomp-leftover_$(release)/usr/local \
-		debian/scicomp-leftover_$(release)/usr/local/lib \
-		debian/scicomp-leftover_$(release)/usr/local/sbin \
-		debian/scicomp-leftover_$(release)/DEBIAN
+$(rootdir):
+	mkdir -p $(rootdir)
 
-control: debdirs
-	cat debian/control | envsubst > \
-		debian/scicomp-leftover_$(release)/DEBIAN/control
-	cp debian/postinst debian/scicomp-leftover_$(release)/DEBIAN/postinst
-	chmod 0755 debian/scicomp-leftover_$(release)/DEBIAN/postinst
-	cp debian/prerm debian/scicomp-leftover_$(release)/DEBIAN/prerm
-	chmod 0755 debian/scicomp-leftover_$(release)/DEBIAN/prerm
+$(libdir): $(rootdir)
+	mkdir -p $(libdir)
 
-install: build control
-	cp -r dist/leftover debian/scicomp-leftover_$(release)/usr/local/lib/
+$(sbindir): $(rootdir)
+	mkdir -p $(sbindir)
+
+$(pkgdir): $(rootdir)
+	mkdir -p $(pkgdir)
+
+control $(pkgdir)/control: $(pkgdir)
+	cat debian/control | envsubst > $(pkgdir)/control
+
+postinst $(pkgdir)/postinst: $(pkgdir)
+	cp debian/postinst $(pkgdir)/postinst
+	chmod 0755 $(pkgdir)/postinst
+
+prerm $(pkgdir)/prerm: $(pkgdir)
+	cp debian/prerm $(pkgdir)/prerm
+	chmod 0755 $(pkgdir)/prerm
+
+pkgcontrol: control postinst prerm
+
+install: build pkgcontrol $(libdir) $(sbindir)
+	cp -r dist/leftover $(libdir)
 
 deb: install
-	dpkg-deb --build debian/scicomp-leftover_$(release)
+	dpkg-deb --build $(rootdir)
 
 clean:
 	rm -r build \
