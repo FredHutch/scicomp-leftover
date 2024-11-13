@@ -23,11 +23,15 @@ control: debdirs
 	cat debian/control | envsubst > \
 		debian/scicomp-leftover_$(release)/DEBIAN/control
 	cp debian/postinst debian/scicomp-leftover_$(release)/DEBIAN/postinst
+	chmod 0755 debian/scicomp-leftover_$(release)/DEBIAN/postinst
 	cp debian/prerm debian/scicomp-leftover_$(release)/DEBIAN/prerm
+	chmod 0755 debian/scicomp-leftover_$(release)/DEBIAN/prerm
 
-install: build debdirs
+install: build control
 	cp -r dist/leftover debian/scicomp-leftover_$(release)/usr/local/lib/
 
+deb: install
+	dpkg-deb --build debian/scicomp-leftover_$(release)
 
 clean:
 	rm -r build \
