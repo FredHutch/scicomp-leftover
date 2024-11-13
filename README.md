@@ -30,3 +30,5 @@ This will drop you to a command prompt inside the container
 user@95cdeb870a74:/mnt $ cd /mnt/scicomp-leftover/
 user@95cdeb870a74:/mnt/scicomp-leftover$ make deb
 ```
+
+Package will show up in the `debian` subdirectory.
