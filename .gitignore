@@ -1,3 +1,4 @@
+*.swp
 debian/
 !debian/control
 build/
