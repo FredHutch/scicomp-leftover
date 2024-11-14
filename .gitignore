@@ -1,8 +1,5 @@
 *.swp
-debian/
-!debian/control
-!debian/postinst
-!debian/prerm
+debian/scicomp-leftover_*
 build/
 dist/
 leftover.spec
