@@ -24,7 +24,6 @@ crier.info( 'INFO: leftover starting' )
 # from dogpiling on the Slurm controller
 # https://github.com/FredHutch/scicomp-todo/issues/294
 slew = randint(90, 600)
-slew = 1
 
 crier.info('INFO: leftover sleeping %s seconds', slew)
 sleep(slew)
