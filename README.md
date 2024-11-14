@@ -16,6 +16,21 @@ Building the `leftover` package uses `pyinstaller` to create a binary package wh
 
 A Docker container is used to build this- see the `Dockerfile` in this repo.
 
+### Get
+
+Check out this source and make it your working directory.
+
+```
+git clone git@github.com:FredHutch/scicomp-leftover.git
+cd scicomp-leftover
+```
+
+All the steps below assume that the source directory is your working directory.
+
+Make any modifications- test and then choose a new version number.  Update `pyproject.toml` and note the new version for the commands below.  Update the changelog, commit all changes, and tag with the version number.
+
+Check out the tag prior to building the package.
+
 ### Build Docker Container
 
 In this directory:
@@ -41,8 +56,7 @@ This will drop you to a command prompt inside the container
 ### Build Package
 
 ```
-user@95cdeb870a74:/mnt $ cd /mnt/scicomp-leftover/
-user@95cdeb870a74:/mnt/scicomp-leftover$ make deb
+user@95cdeb870a74:/mnt$ make deb
 ```
 
 Package will show up in the `debian` subdirectory.
