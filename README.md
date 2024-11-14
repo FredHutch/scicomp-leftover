@@ -1,8 +1,20 @@
 # Leftover
 
-> TBD describe leftover operations
+`leftover` runs on Slurm daemon nodes (compute nodes) and monitors the process stack for processes that are running without an allocation.
+
+More precisely, it kills processes from "regular" users who do not have an allocation on the node.  It compares the process table and the list of users who have jobs running on the node.
+
+The config file is a simple JSON file that contains a list of users who should be exempted from `leftover` pruning.
+
+Ultimately, this list of exempt users is combined with passwd(5) entries with UID less than 1000 to create a full list of users who's processes are allowed to run on the node.
+
+`leftover` uses `squeue` to get UIDs with allocations on the node- if `squeue` should fail for any reason or if `squeue` doesn't return in a timely fashion (2 seconds) it will bail out and note the problem in syslog.
 
 ## Building
+
+Building the `leftover` package uses `pyinstaller` to create a binary package which is then bundled into a .deb package for installation on the node.
+
+A Docker container is used to build this- see the `Dockerfile` in this repo.
 
 ### Build Docker Container
 
@@ -13,6 +25,8 @@ docker build --build-arg UID=$(id -u) --build-arg=USERNAME=$(whoami) -t scicomp-
 ```
 
 ### Run Docker Container
+
+When running the docker container, update the environment variable in this command to match the release you are building.
 
 ```
 docker run -it --rm \
