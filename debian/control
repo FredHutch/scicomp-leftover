@@ -1,0 +1,8 @@
+Package: scicomp-leftover
+Version: ${RELEASE}
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: python3,slurm-smd-client
+Maintainer: Scientific Computing <scicomp@fredhutch.org>
+Description: The leftover script that kills processes without a job
