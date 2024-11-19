@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import subprocess
-import socket
 import sys
 import json
 import logging
