@@ -10,6 +10,26 @@ Ultimately, this list of exempt users is combined with passwd(5) entries with UI
 
 `leftover` uses `squeue` to get UIDs with allocations on the node- if `squeue` should fail for any reason or if `squeue` doesn't return in a timely fashion (2 seconds) it will bail out and note the problem in syslog.
 
+## Configuring
+
+The file `/etc/leftover.conf` is a JSON formatted file.  All entries are optional.
+
+```
+{
+  "protected_users": [
+    "alice",
+    "bob"
+  ],
+  "debuglevel": "info",
+  "slew": 10,
+  "slew_max": 40
+}
+```
+
+ -  _protected_users_ attribute contains a list of users (above UID 1000) who's processes should be protected from killing.
+ - _debuglevel_ will configure how many messages are logged- debug, info, err, critical, warn are valid here.
+ - _slew_ and _slew_max_ set the amount between the start and when actions will be taken.  If only _slew_ is set, leftover will wait that many seconds before beginning evaluation.  If _slew_ and _slew_max_ are set, _leftover_ will choose a random number between _slew_ and _slew_max_ and wait that many seconds before evaluation
+
 ## Building
 
 Building the `leftover` package uses `pyinstaller` to create a binary package which is then bundled into a .deb package for installation on the node.

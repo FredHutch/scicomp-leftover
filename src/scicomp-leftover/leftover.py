@@ -19,8 +19,13 @@ crier.addHandler(syslog)
 
 crier.info('INFO: leftover starting')
 
-with open('/etc/leftover.conf') as f:
-    configs = json.loads(f.read())
+configs = {}
+
+try:
+    with open('/etc/leftover.conf') as f:
+        configs = json.loads(f.read())
+except FileNotFoundError:
+    crier.warning("WARNING: no config file found, proceeding with defaults")
 
 # Sleep for a random number of seconds to keep the leftovers on all the nodes
 # from dogpiling on the Slurm controller
@@ -47,11 +52,13 @@ if "debuglevel" in configs:
         case "critical":
             crier.setLevel(logging.CRITICAL)
 
+
 crier.info('INFO: leftover sleeping %s seconds', slew)
 sleep(slew)
 crier.info('INFO: leftover starting process audit')
 
 protected_users = []
+
 with open('/etc/passwd', 'r') as passwd:
     entry = passwd.readline()
     while entry:
@@ -63,11 +70,13 @@ with open('/etc/passwd', 'r') as passwd:
                     )
         entry = passwd.readline()
 
-protected_users = protected_users + configs['protected_users']
-crier.debug(
-        "DEBUG: leftover aded {} ".format(configs['protected_users']) +
-        "to protected users from config"
-        )
+if "protected_users" in configs:
+    protected_users = protected_users + configs['protected_users']
+    crier.debug(
+            "DEBUG: leftover aded {} ".format(configs['protected_users']) +
+            "to protected users from config"
+            )
+
 
 # find all the nodes configured on this host when
 # multiple slurmd's are running
