@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess
 import socket
@@ -24,6 +24,7 @@ crier.info( 'INFO: leftover starting' )
 # from dogpiling on the Slurm controller
 # https://github.com/FredHutch/scicomp-todo/issues/294
 slew = randint(90, 600)
+slew = 5
 
 crier.info('INFO: leftover sleeping %s seconds', slew)
 sleep(slew)
@@ -55,7 +56,7 @@ crier.debug(
 
 cmd = [ 'scontrol', 'show', 'aliases' ]
 try:
-    result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    result = subprocess.run(cmd, capture_output=True, text=True)
 except subprocess.CalledProcessError as err:
     crier.critical(
         'CRITICAL: scontrol failed to find aliases: %s %s',
@@ -64,19 +65,24 @@ except subprocess.CalledProcessError as err:
     )
     sys.exit(1)
 
-nodenames = ','.join(result.split())
+nodenames = ','.join(result.stdout.rstrip().split())
+
 if nodenames == '':
     crier.critical(
         'CRITICAL: \'nodenames\' is empty- is this node in the cluster?'
     )
     sys.exit(1)
 
+crier.debug(
+    'DEBUG: set node names to \'%s\'', nodenames
+)
+
 cmd = [ 'squeue', '-a', '-h', '-w', nodenames, '-o', '%u']
 
 time_squeue_start = time()
 
 try:
-    result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    result = subprocess.run(cmd, capture_output=True, text=True)
 except subprocess.CalledProcessError as err:
     crier.critical(
         'CRITICAL: squeue command failed with error %s: %s',
@@ -86,20 +92,23 @@ except subprocess.CalledProcessError as err:
     sys.exit(1)
 
 squeue_elapsed = time() - time_squeue_start
+crier.debug(
+    'DEBUG: squeue run took %i seconds', squeue_elapsed
+)
+
 if squeue_elapsed > 2:
     # if squeue doesn't respond within 2 seconds we'll consider
     # the output "stale" so we don't kill jobs that are started
     # while this script runs
     crier.error('ERROR: squeue did not respond in a timely manner, exiting')
-    crier.debug('DEBUG: squeue tooks %d seconds', squeue_elapsed)
     sys.exit(0)
 
-valid_users = set(result.rstrip('\n').split('\n'))
+valid_users = set(result.stdout.rstrip('\n').split('\n'))
 valid_users = valid_users.union( protected_users )
 
 cmd = [ 'ps', '--no-headers', '-e', '-o', 'user' ]
-result = subprocess.check_output( cmd )
-running_users = set(result.rstrip('\n').split('\n'))
+result = subprocess.run(cmd, capture_output=True, text=True)
+running_users = set(result.stdout.rstrip('\n').split('\n'))
 
 invalid_users = running_users.difference( valid_users )
 
@@ -120,7 +129,7 @@ for u in invalid_users:
 
     sleep( 8 )
 
-    cmd = [ 'pkill', '-KILL', '-u', u ]
+    cmd = [ 'echo', 'pkill', '-KILL', '-u', u ]
     try:
         result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
