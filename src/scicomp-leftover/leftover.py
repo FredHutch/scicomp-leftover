@@ -156,7 +156,7 @@ for u in invalid_users:
 
     sleep(8)
 
-    cmd = ['echo', 'pkill', '-KILL', '-u', u]
+    cmd = ['pkill', '-KILL', '-u', u]
     try:
         result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
