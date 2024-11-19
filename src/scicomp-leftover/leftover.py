@@ -19,11 +19,33 @@ crier.addHandler(syslog)
 
 crier.info('INFO: leftover starting')
 
+with open('/etc/leftover.conf') as f:
+    configs = json.loads(f.read())
+
 # Sleep for a random number of seconds to keep the leftovers on all the nodes
 # from dogpiling on the Slurm controller
 # https://github.com/FredHutch/scicomp-todo/issues/294
-slew = randint(90, 600)
-slew = 5
+if "slew" in configs:
+    slew = configs['slew']
+    if "slew_max" in configs:
+        slew = randint(slew, configs['slew_max'])
+else:
+    slew = 2
+
+if "debuglevel" in configs:
+    debuglevel=configs['debuglevel']
+    crier.debug('DEBUG: setting loglevel to %s', debuglevel)
+    match debuglevel:
+        case "debug":
+            crier.setLevel(logging.DEBUG)
+        case "info":
+            crier.setLevel(logging.INFO)
+        case "warning":
+            crier.setLevel(logging.WARNING)
+        case "error":
+            crier.setLevel(logging.ERROR)
+        case "critical":
+            crier.setLevel(logging.CRITICAL)
 
 crier.info('INFO: leftover sleeping %s seconds', slew)
 sleep(slew)
@@ -40,9 +62,6 @@ with open('/etc/passwd', 'r') as passwd:
                     "DEBUG: leftover aded {} to protected users".format(user)
                     )
         entry = passwd.readline()
-
-with open('/etc/leftover.conf') as f:
-    configs = json.loads(f.read())
 
 protected_users = protected_users + configs['protected_users']
 crier.debug(
